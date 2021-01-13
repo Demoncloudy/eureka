@@ -193,6 +193,7 @@ public class EurekaBootStrap implements ServletContextListener {
             awsBinder = new AwsBinderDelegate(eurekaServerConfig, eurekaClient.getEurekaClientConfig(), registry, applicationInfoManager);
             awsBinder.start();
         } else {
+            // 可以感知到eureka集群中其他eureka server中的信息的注册表
             registry = new PeerAwareInstanceRegistryImpl(
                     eurekaServerConfig,
                     eurekaClient.getEurekaClientConfig(),
@@ -202,6 +203,7 @@ public class EurekaBootStrap implements ServletContextListener {
         }
 
         // 4. Peer节点
+        // eureka server的集群
         PeerEurekaNodes peerEurekaNodes = getPeerEurekaNodes(
                 registry,
                 eurekaServerConfig,
@@ -210,7 +212,7 @@ public class EurekaBootStrap implements ServletContextListener {
                 applicationInfoManager
         );
 
-        // 5. 完成 eureka server 上下文(context)的构建
+        // 5. 完成 eureka server 上下文(context)的构建 服务器需要的信息
         serverContext = new DefaultEurekaServerContext(
                 eurekaServerConfig,
                 serverCodecs,
@@ -219,17 +221,22 @@ public class EurekaBootStrap implements ServletContextListener {
                 applicationInfoManager
         );
 
+        // 将初始化好的serverContext 放入holder中,系统运行期间任何时间都可以获取
         EurekaServerContextHolder.initialize(serverContext);
 
+        // 将eureka server集群给启动起来, 更新一下eureka server集群的信息, 让当前的eureka server感知到所有的其他的eureka server
+        // 然后搞一个定时调度任务, 一个后台线程, 每隔一定的时间, 更新eureka server集群的信息。
         serverContext.initialize();
         logger.info("Initialized server context");
 
         // 6. 处理善后, 从相邻的eureka节点拷贝注册信息
         // Copy registry from neighboring eureka node
+        // 从相邻的一个eureka server节点拷贝注册表的信息,如果拷贝失败,就找下一个
         int registryCount = registry.syncUp();
         registry.openForTraffic(applicationInfoManager, registryCount);
 
         // 7. 注册所有的监控统计项
+        // eureka自身的监控机制相关联
         // Register all monitoring statistics.
         EurekaMonitors.registerAllStats();
     }
