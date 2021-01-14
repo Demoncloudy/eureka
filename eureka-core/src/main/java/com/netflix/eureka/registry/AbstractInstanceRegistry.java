@@ -356,6 +356,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      */
     public boolean renew(String appName, String id, boolean isReplication) {
         RENEW.increment(isReplication);
+        // 从注册表中获取gmap, 在获取租约
         Map<String, Lease<InstanceInfo>> gMap = registry.get(appName);
         Lease<InstanceInfo> leaseToRenew = null;
         if (gMap != null) {

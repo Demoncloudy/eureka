@@ -839,6 +839,7 @@ public class DiscoveryClient implements EurekaClient {
     boolean renew() {
         EurekaHttpResponse<InstanceInfo> httpResponse;
         try {
+            // 发送到com.netflix.discovery.shared.transport.jersey2.AbstractJersey2EurekaHttpClient
             httpResponse = eurekaTransport.registrationClient.sendHeartBeat(instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null);
             logger.debug("{} - Heartbeat status: {}", PREFIX + appPathIdentifier, httpResponse.getStatusCode());
             if (httpResponse.getStatusCode() == 404) {
@@ -1281,11 +1282,15 @@ public class DiscoveryClient implements EurekaClient {
             logger.info("Starting heartbeat executor: " + "renew interval is: " + renewalIntervalInSecs);
 
             // Heartbeat timer
+            // 心跳线程
+            // 更新 lastUpdateTimestamp + duration(默认90s)
+            // com.netflix.eureka.lease.Lease.renew
             scheduler.schedule(
                     new TimedSupervisorTask(
                             "heartbeat",
                             scheduler,
                             heartbeatExecutor,
+                            // 默认值为30s
                             renewalIntervalInSecs,
                             TimeUnit.SECONDS,
                             expBackOffBound,
@@ -1416,6 +1421,7 @@ public class DiscoveryClient implements EurekaClient {
     private class HeartbeatThread implements Runnable {
 
         public void run() {
+            // 更新
             if (renew()) {
                 lastSuccessfulHeartbeatTimestamp = System.currentTimeMillis();
             }

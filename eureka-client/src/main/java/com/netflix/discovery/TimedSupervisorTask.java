@@ -92,6 +92,7 @@ public class TimedSupervisorTask extends TimerTask {
                 future.cancel(true);
             }
 
+            // 再次放入线程池
             if (!scheduler.isShutdown()) {
                 scheduler.schedule(this, delay.get(), TimeUnit.MILLISECONDS);
             }
