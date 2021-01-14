@@ -421,7 +421,7 @@ public class DiscoveryClient implements EurekaClient {
             throw new RuntimeException("Failed to initialize DiscoveryClient!", e);
         }
 
-        // 抓取注册表
+        // 抓取注册表 理论上应该在这里有服务注册
         if (clientConfig.shouldFetchRegistry() && !fetchRegistry(false)) {
             // 抓取失败从备份哪里抓取
             fetchRegistryFromBackup();
@@ -821,6 +821,7 @@ public class DiscoveryClient implements EurekaClient {
         logger.info(PREFIX + appPathIdentifier + ": registering service...");
         EurekaHttpResponse<Void> httpResponse;
         try {
+            // 服务注册
             httpResponse = eurekaTransport.registrationClient.register(instanceInfo);
         } catch (Exception e) {
             logger.warn("{} - registration failed {}", PREFIX + appPathIdentifier, e.getMessage(), e);
