@@ -112,6 +112,7 @@ public abstract class AbstractJersey2EurekaHttpClient implements EurekaHttpClien
         String urlPath = "apps/" + appName + '/' + id;
         Response response = null;
         try {
+            // com.netflix.eureka.resources.InstanceResource.cancelLease
             Builder resourceBuilder = jerseyClient.target(serviceUrl).path(urlPath).request();
             addExtraProperties(resourceBuilder);
             addExtraHeaders(resourceBuilder);
