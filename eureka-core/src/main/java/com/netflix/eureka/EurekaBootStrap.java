@@ -204,6 +204,7 @@ public class EurekaBootStrap implements ServletContextListener {
 
         // 4. Peer节点
         // eureka server的集群
+        // 集群
         PeerEurekaNodes peerEurekaNodes = getPeerEurekaNodes(
                 registry,
                 eurekaServerConfig,
@@ -226,6 +227,7 @@ public class EurekaBootStrap implements ServletContextListener {
 
         // 将eureka server集群给启动起来, 更新一下eureka server集群的信息, 让当前的eureka server感知到所有的其他的eureka server
         // 然后搞一个定时调度任务, 一个后台线程, 每隔一定的时间, 更新eureka server集群的信息。
+        // 入口
         serverContext.initialize();
         logger.info("Initialized server context");
 

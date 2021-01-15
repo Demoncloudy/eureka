@@ -90,6 +90,7 @@ public abstract class AbstractJersey2EurekaHttpClient implements EurekaHttpClien
             // apps/ServiceA
             Builder resourceBuilder = jerseyClient.target(serviceUrl).path(urlPath).request();
             addExtraProperties(resourceBuilder);
+            // 同步的时候 header 添加为true
             addExtraHeaders(resourceBuilder);
             response = resourceBuilder
                     .accept(MediaType.APPLICATION_JSON)
