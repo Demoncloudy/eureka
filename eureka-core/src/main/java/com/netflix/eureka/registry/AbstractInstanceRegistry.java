@@ -225,6 +225,8 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             } else {
                 // The lease does not exist and hence it is a new registration
                 synchronized (lock) {
+                    // 用于后续的自我保护检查
+                    // com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl.openForTraffic
                     if (this.expectedNumberOfRenewsPerMin > 0) {
                         // Since the client wants to cancel it, reduce the threshold
                         // (1
@@ -397,6 +399,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                     instanceInfo.setStatusWithoutDirty(overriddenInstanceStatus);
                 }
             }
+            // 记录每分钟的心跳次数
             renewsLastMin.increment();
             leaseToRenew.renew();
             return true;

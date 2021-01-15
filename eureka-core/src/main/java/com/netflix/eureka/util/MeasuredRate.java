@@ -54,11 +54,14 @@ public class MeasuredRate {
                 public void run() {
                     try {
                         // Zero out the current bucket.
+                        // 每分钟将现在的心跳数设置给lastbucket, 当前的心跳数清0
                         lastBucket.set(currentBucket.getAndSet(0));
                     } catch (Throwable e) {
                         logger.error("Cannot reset the Measured Rate", e);
                     }
                 }
+                // this.renewsLastMin = new MeasuredRate(1000 * 60 * 1);
+                // com.netflix.eureka.registry.AbstractInstanceRegistry.AbstractInstanceRegistry
             }, sampleInterval, sampleInterval);
 
             isActive = true;
