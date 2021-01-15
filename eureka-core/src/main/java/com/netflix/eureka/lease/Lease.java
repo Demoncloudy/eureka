@@ -109,6 +109,11 @@ public class Lease<T> {
      *
      * @param additionalLeaseMs any additional lease time to add to the lease evaluation in ms.
      */
+    // 已知的bug
+    // com.netflix.eureka.lease.Lease.renew
+    // lastUpdateTimestamp = 上次任务执行的时间 + duration, 就是当前应该执行的时间
+    // 当前时间 - lastUpdateTimestamp > additionalLeaseMs 就已经过期了
+    // 这里又多了一个duration, 差值超过这个duration才会过期, 实际上需要至少2个duration才会过期
     public boolean isExpired(long additionalLeaseMs) {
         return (evictionTimestamp > 0 || System.currentTimeMillis() > (lastUpdateTimestamp + duration + additionalLeaseMs));
     }
