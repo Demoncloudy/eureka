@@ -183,6 +183,7 @@ class AcceptorExecutor<ID, T> {
             long scheduleTime = 0;
             while (!isShutdown.get()) {
                 try {
+                    // while循环取从queue中取出, 放入processingOrder中
                     drainInputQueues();
 
                     int totalItems = processingOrder.size();
@@ -191,6 +192,7 @@ class AcceptorExecutor<ID, T> {
                     if (scheduleTime < now) {
                         scheduleTime = now + trafficShaper.transmissionDelay();
                     }
+                    // 放入batch 中
                     if (scheduleTime <= now) {
                         assignBatchWork();
                         assignSingleItemWork();
@@ -224,6 +226,7 @@ class AcceptorExecutor<ID, T> {
                     if (reprocessQueue.isEmpty() && acceptorQueue.isEmpty() && pendingTasks.isEmpty()) {
                         TaskHolder<ID, T> taskHolder = acceptorQueue.poll(10, TimeUnit.MILLISECONDS);
                         if (taskHolder != null) {
+                            // 放入processingOrder
                             appendTaskHolder(taskHolder);
                         }
                     }
@@ -292,6 +295,7 @@ class AcceptorExecutor<ID, T> {
             if (hasEnoughTasksForNextBatch()) {
                 if (batchWorkRequests.tryAcquire(1)) {
                     long now = System.currentTimeMillis();
+                    // 取最小的
                     int len = Math.min(maxBatchingSize, processingOrder.size());
                     List<TaskHolder<ID, T>> holders = new ArrayList<>(len);
                     while (holders.size() < len && !processingOrder.isEmpty()) {
@@ -307,6 +311,8 @@ class AcceptorExecutor<ID, T> {
                         batchWorkRequests.release();
                     } else {
                         batchSizeMetric.record(holders.size(), TimeUnit.MILLISECONDS);
+                        // 放入batchWorkQueue
+                        // com.netflix.eureka.cluster.ReplicationTaskProcessor.process(java.util.List<com.netflix.eureka.cluster.ReplicationTask>) 用来处理这个queue
                         batchWorkQueue.add(holders);
                     }
                 }
@@ -314,6 +320,7 @@ class AcceptorExecutor<ID, T> {
         }
 
         private boolean hasEnoughTasksForNextBatch() {
+            // 默认每maxBatchingDelay ms会打包成一个batch  maxBatchingDelay 默认500ms
             if (processingOrder.isEmpty()) {
                 return false;
             }

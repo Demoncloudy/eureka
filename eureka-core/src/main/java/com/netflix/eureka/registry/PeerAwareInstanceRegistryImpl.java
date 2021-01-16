@@ -674,6 +674,26 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
                                                  String id, InstanceInfo info, InstanceStatus newStatus,
                                                  PeerEurekaNode node) {
         try {
+            // 同步的时候都是使用3层队列
+            // batchingDispatcher ->
+            // com.netflix.eureka.cluster.PeerEurekaNode.batchingDispatcher
+            // this.batchingDispatcher = TaskDispatchers.createBatchingTaskDispatcher
+            // -> AcceptorExecutor
+            // com.netflix.eureka.util.batcher.TaskDispatchers.createBatchingTaskDispatcher
+            // AcceptorExecutor用内部线程com.netflix.eureka.util.batcher.AcceptorExecutor.AcceptorRunner处理这个queue
+            // drainInputQueues(); while死循环 放入processingOrder
+
+            // com.netflix.eureka.util.batcher.AcceptorExecutor.AcceptorRunner.assignBatchWork
+            // assignBatchWork(); 放入batch 中 从processingOrder 中取出处理
+
+            // 在放入batchWorkQueue
+            // com.netflix.eureka.cluster.ReplicationTaskProcessor.process(java.util.List<com.netflix.eureka.cluster.ReplicationTask>)
+            // 用来处理这个queue
+
+            // 之前batchingDispatcher 创建时候启动的
+            // com.netflix.eureka.util.batcher.TaskDispatchers.createBatchingTaskDispatcher
+            // final TaskExecutors<ID, T> taskExecutor = TaskExecutors.batchExecutors(id, workerCount, taskProcessor, acceptorExecutor);
+            // 来处理
             InstanceInfo infoFromRegistry = null;
             CurrentRequestVersion.set(Version.V2);
             switch (action) {
