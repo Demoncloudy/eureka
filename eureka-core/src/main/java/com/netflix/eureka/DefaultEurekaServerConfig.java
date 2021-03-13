@@ -99,17 +99,22 @@ public class DefaultEurekaServerConfig implements EurekaServerConfig {
     }
 
     private void init() {
-        // 加载, 放入ConfigurationManager
+        // 之前初始化后的 ConfigurationManager.getConfigInstance()
         String env = ConfigurationManager.getConfigInstance().getString(
                 EUREKA_ENVIRONMENT, TEST);
         ConfigurationManager.getConfigInstance().setProperty(
                 ARCHAIUS_DEPLOYMENT_ENVIRONMENT, env);
-        // eureka-server
+        // eureka-server 加载配置文件 默认值 eureka-server
         String eurekaPropsFile = EUREKA_PROPS_FILE.get();
         try {
             // ConfigurationManager
             // .loadPropertiesFromResources(eurekaPropsFile);
             // 放入DynamicPropertyFactory,从中获取
+            // 加载
+            // 拼接eureka-server 和 ".properties"
+            // 继续加载, 会把之前相同的配置覆盖掉
+            // configName + "-" + environment + ".properties";
+            // eureka-server + "-" + "test"(之前获取的默认值) + ".properties"
             ConfigurationManager
                     .loadCascadedPropertiesFromResources(eurekaPropsFile);
         } catch (IOException e) {

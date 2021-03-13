@@ -129,6 +129,7 @@ public class EurekaBootStrap implements ServletContextListener {
         logger.info("Setting the eureka configuration..");
         // 获取配置
         // 获取数据中心，没有则为default
+        // 单例为ConcurrentCompositeConfiguration
         String dataCenter = ConfigurationManager.getConfigInstance().getString(EUREKA_DATACENTER);
         if (dataCenter == null) {
             logger.info("Eureka data center value eureka.datacenter is not set, defaulting to default");
