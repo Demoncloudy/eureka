@@ -126,7 +126,7 @@ public class ExampleEurekaClient {
         System.setProperty("eureka.port", "8080");
         System.setProperty("eureka.preferSameZone", "false");
         System.setProperty("eureka.shouldUseDns", "false");
-        System.setProperty("eureka.shouldFetchRegistry", "false");
+        System.setProperty("eureka.shouldFetchRegistry", "true");
         System.setProperty("eureka.serviceUrl.defaultZone", myServiceUrl);
         System.setProperty("eureka.serviceUrl.default.defaultZone", myServiceUrl);
         System.setProperty("eureka.awsAccessId", "fake_aws_access_id");
@@ -136,10 +136,13 @@ public class ExampleEurekaClient {
 
     public static void main(String[] args) throws UnknownHostException {
         injectEurekaConfiguration();
+        // 相当于一个自己的服务
         ExampleEurekaClient sampleClient = new ExampleEurekaClient();
 
         // create the client
+        // 与原来启动相比构造时没有instanceinfo, 这部分通过injectEurekaConfiguration(); 放在本地
         ApplicationInfoManager applicationInfoManager = initializeApplicationInfoManager(new MyDataCenterInstanceConfig());
+        // 构造DiscoveryClient 和原来一样
         EurekaClient client = initializeEurekaClient(applicationInfoManager, new DefaultEurekaClientConfig());
 
         // use the client
