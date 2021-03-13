@@ -167,12 +167,15 @@ public class EurekaBootStrap implements ServletContextListener {
         ApplicationInfoManager applicationInfoManager = null;
 
         if (eurekaClient == null) {
-            // 加载eureka-client配置, 基于EurekaInstanceConfig对外暴露接口来获取配置信息
+            // 加载eureka-client配置
+            // 基于EurekaInstanceConfig 其中的DynamicPropertyFactory configInstance对外暴露接口来获取配置信息
+            // MyDataCenterInstanceConfig 实例化时调用父类的构造方法 加载eureka.client.props中的配置
             EurekaInstanceConfig instanceConfig = isCloud(ConfigurationManager.getDeploymentContext())
                     ? new CloudInstanceConfig()
                     : new MyDataCenterInstanceConfig();
 
             // get() == InstanceInfo 构造器模式
+            // 用InstanceInfo和instanceConfig构造applicationInfoManager
             applicationInfoManager = new ApplicationInfoManager(
                     instanceConfig, new EurekaConfigBasedInstanceInfoProvider(instanceConfig).get());
             
