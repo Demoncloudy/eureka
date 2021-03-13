@@ -53,6 +53,7 @@ public abstract class EurekaHttpClientDecorator implements EurekaHttpClient {
 
     @Override
     public EurekaHttpResponse<Void> register(final InstanceInfo info) {
+        // 子类的SessionedEurekaHttpClient 的execute 方法
         return execute(new RequestExecutor<Void>() {
             @Override
             public EurekaHttpResponse<Void> execute(EurekaHttpClient delegate) {

@@ -199,6 +199,18 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             read.lock();
             Map<String, Lease<InstanceInfo>> gMap = registry.get(registrant.getAppName());
             REGISTER.increment(isReplication);
+            // 某个服务第一次来注册, map为空, 创建新的
+            // registry 就是一个注册表, 里面包含了每个服务实例的注册信息 具体时每个app -> 下面对应多个不同的服务实例
+            // {
+            //  "ServiceA": {
+            //      "001": Lease<InstanceInfo>,
+            //      "002": Lease<InstanceInfo>,
+            //      "003": Lease<InstanceInfo>,
+            //  },
+            //  "ServiceB": {
+            //      "001": Lease<InstanceInfo>
+            //  }
+            //}
             if (gMap == null) {
                 final ConcurrentHashMap<String, Lease<InstanceInfo>> gNewMap = new ConcurrentHashMap<String, Lease<InstanceInfo>>();
                 gMap = registry.putIfAbsent(registrant.getAppName(), gNewMap);
@@ -243,6 +255,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             if (existingLease != null) {
                 lease.setServiceUpTimestamp(existingLease.getServiceUpTimestamp());
             }
+            // 封装了服务实例信息的Lease对象, 放到了gMap中去, key就是服务实例id
             gMap.put(registrant.getId(), lease);
             synchronized (recentRegisteredQueue) {
                 recentRegisteredQueue.add(new Pair<Long, String>(
@@ -270,6 +283,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             registrant.setStatusWithoutDirty(overriddenInstanceStatus);
 
             // If the lease is registered with UP status, set lease service up timestamp
+            // 设置服务时间
             if (InstanceStatus.UP.equals(registrant.getStatus())) {
                 lease.serviceUp();
             }

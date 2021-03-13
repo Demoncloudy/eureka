@@ -144,6 +144,7 @@ public class ApplicationResource {
     public Response addInstance(InstanceInfo info,
                                 @HeaderParam(PeerEurekaNode.HEADER_REPLICATION) String isReplication) {
         // 接受post请求
+        // 防御式编程 保持健壮性
         logger.debug("Registering instance {} (replication={})", info.getId(), isReplication);
         // validate that the instanceinfo contains all the necessary required fields
         if (isBlank(info.getId())) {
@@ -168,6 +169,8 @@ public class ApplicationResource {
             String dataCenterInfoId = ((UniqueIdentifier) dataCenterInfo).getId();
             if (isBlank(dataCenterInfoId)) {
                 boolean experimental = "true".equalsIgnoreCase(serverConfig.getExperimental("registration.validation.dataCenterInfoId"));
+                // DataCenter dataCenter = DataCenterFactory.get() -> 根据配置文件中 判断进行返回
+                // 实现类 defaultDataCenter 或者 awsDataCenter 面向接口编程
                 if (experimental) {
                     String entity = "DataCenterInfo of type " + dataCenterInfo.getClass() + " must contain a valid id";
                     return Response.status(400).entity(entity).build();

@@ -96,6 +96,8 @@ public abstract class AbstractJersey2EurekaHttpClient implements EurekaHttpClien
                     .accept(MediaType.APPLICATION_JSON)
                     .acceptEncoding("gzip")
                     .post(Entity.json(info));
+            // 发送到com.netflix.eureka.resources.ApplicationsResource.getApplicationResource
+            // post请求转发到com.netflix.eureka.resources.ApplicationResource.addInstance
             return anEurekaHttpResponse(response.getStatus()).headers(headersOf(response)).build();
         } finally {
             if (logger.isDebugEnabled()) {

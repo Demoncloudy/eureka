@@ -432,6 +432,7 @@ public class DiscoveryClient implements EurekaClient {
             this.preRegistrationHandler.beforeRegistration();
         }
         // 初始化调度任务
+        // 注册逻辑在这里面
         initScheduledTasks();
 
         try {
@@ -504,6 +505,7 @@ public class DiscoveryClient implements EurekaClient {
         // 需要client注册
         if (clientConfig.shouldRegisterWithEureka()) {
             EurekaHttpClientFactory newRegistrationClientFactory = null;
+            // 创建registrationClient 用于服务注册的通信  -> SessionedEurekaHttpClient
             EurekaHttpClient newRegistrationClient = null;
             try {
                 newRegistrationClientFactory = EurekaHttpClients.registrationClientFactory(
@@ -822,6 +824,7 @@ public class DiscoveryClient implements EurekaClient {
         EurekaHttpResponse<Void> httpResponse;
         try {
             // 服务注册
+            // SessionedEurekaHttpClient 的父类 EurekaHttpClientDecorator 的register方法
             httpResponse = eurekaTransport.registrationClient.register(instanceInfo);
         } catch (Exception e) {
             logger.warn("{} - registration failed {}", PREFIX + appPathIdentifier, e.getMessage(), e);
@@ -1406,6 +1409,7 @@ public class DiscoveryClient implements EurekaClient {
         applicationInfoManager.refreshDataCenterInfoIfRequired();
         applicationInfoManager.refreshLeaseInfoIfRequired();
 
+        // 检查健康状态并更新
         InstanceStatus status;
         try {
             status = getHealthCheckHandler().getStatus(instanceInfo.getStatus());

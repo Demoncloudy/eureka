@@ -181,6 +181,7 @@ public class EurekaBootStrap implements ServletContextListener {
             
             EurekaClientConfig eurekaClientConfig = new DefaultEurekaClientConfig();
             // 初始化抓取注册表, 调度任务等
+            // 注册逻辑在这里面 new DiscoveryClient
             eurekaClient = new DiscoveryClient(applicationInfoManager, eurekaClientConfig);
         } else {
             applicationInfoManager = eurekaClient.getApplicationInfoManager();
