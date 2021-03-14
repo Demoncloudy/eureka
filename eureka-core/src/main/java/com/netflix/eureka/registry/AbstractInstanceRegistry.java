@@ -378,8 +378,9 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      * @see com.netflix.eureka.lease.LeaseManager#renew(java.lang.String, java.lang.String, boolean)
      */
     public boolean renew(String appName, String id, boolean isReplication) {
+        // Number of total renews seen since startup
         RENEW.increment(isReplication);
-        // 从注册表中获取gmap, 在获取租约
+        // 从注册表中获取gmap, 根据服务名和实例ID获取租约
         Map<String, Lease<InstanceInfo>> gMap = registry.get(appName);
         Lease<InstanceInfo> leaseToRenew = null;
         if (gMap != null) {
@@ -413,8 +414,10 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                     instanceInfo.setStatusWithoutDirty(overriddenInstanceStatus);
                 }
             }
+            // 分布式服务心跳机制很重要,监控其他服务是否或者
             // 记录每分钟的心跳次数
             renewsLastMin.increment();
+            // 更新时间戳
             leaseToRenew.renew();
             return true;
         }

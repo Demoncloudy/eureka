@@ -134,9 +134,7 @@ public abstract class AbstractJersey2EurekaHttpClient implements EurekaHttpClien
     @Override
     public EurekaHttpResponse<InstanceInfo> sendHeartBeat(String appName, String id, InstanceInfo info, InstanceStatus overriddenStatus) {
         // http://localhost:8080/v2/apps/ServiceA/i-0001-1  服务实例的id
-        // com.netflix.eureka.resources.ApplicationsResource.getApplicationResource @Path("{appId}")
-        // com.netflix.eureka.resources.ApplicationResource.getInstanceInfo @Path("{id}")
-        // 上面2个拼接起来的url
+
         String urlPath = "apps/" + appName + '/' + id;
         Response response = null;
         try {
@@ -151,9 +149,13 @@ public abstract class AbstractJersey2EurekaHttpClient implements EurekaHttpClien
             addExtraProperties(requestBuilder);
             addExtraHeaders(requestBuilder);
             requestBuilder.accept(MediaType.APPLICATION_JSON_TYPE);
+            // com.netflix.eureka.resources.ApplicationsResource.getApplicationResource @Path("{appId}")
+            // com.netflix.eureka.resources.ApplicationResource.getInstanceInfo @Path("{id}")
+            // 上面2个拼接起来的url
             // put 请求
             // new InstanceResource(this, id, serverConfig, registry);
             // 在去com.netflix.eureka.resources.InstanceResource下面去找put 请求
+            // com.netflix.eureka.resources.InstanceResource.renewLease
             response = requestBuilder.put(Entity.entity("{}", MediaType.APPLICATION_JSON_TYPE)); // Jersey2 refuses to handle PUT with no body
             EurekaHttpResponseBuilder<InstanceInfo> eurekaResponseBuilder = anEurekaHttpResponse(response.getStatus(), InstanceInfo.class).headers(headersOf(response));
             if (response.hasEntity()) {

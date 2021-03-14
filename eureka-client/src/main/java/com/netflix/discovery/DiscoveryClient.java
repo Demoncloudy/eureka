@@ -1299,6 +1299,9 @@ public class DiscoveryClient implements EurekaClient {
             // 心跳线程
             // 更新 lastUpdateTimestamp + duration(默认90s)
             // com.netflix.eureka.lease.Lease.renew
+            // 配置选项
+            // eureka.instance.leaseRenewallIntervalInSeconds 默认值为30s
+            // eureka.instance.leaseExpirationDurationInSeconds
             scheduler.schedule(
                     new TimedSupervisorTask(
                             "heartbeat",
