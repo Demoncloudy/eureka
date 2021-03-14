@@ -951,6 +951,9 @@ public class DiscoveryClient implements EurekaClient {
             // applications
             Applications applications = getApplications();
 
+            // 槽点 if可读性差 抽离出来
+            // boolean shouldDisableDelta = clientConfig.shouldDisableDelta();
+            // boolean isEmptyVipAddress = !Strings.isNullOrEmpty(clientConfig.getRegistryRefreshSingleVipAddress())
             if (clientConfig.shouldDisableDelta()
                     || (!Strings.isNullOrEmpty(clientConfig.getRegistryRefreshSingleVipAddress()))
                     || forceFullRegistryFetch
@@ -965,8 +968,11 @@ public class DiscoveryClient implements EurekaClient {
                 logger.info("Registered Applications size is zero : {}",
                         (applications.getRegisteredApplications().size() == 0));
                 logger.info("Application version is -1: {}", (applications.getVersion() == -1));
+                // 抓取全量注册表
                 getAndStoreFullRegistry();
             } else {
+                // 抓取增量注册表
+                // 本地已经有缓存了 applications不为null,  forceFullRegistryFetch 传入的默认值为false
                 getAndUpdateDelta(applications);
             }
             applications.setAppsHashCode(applications.getReconcileHashCode());
@@ -1102,6 +1108,7 @@ public class DiscoveryClient implements EurekaClient {
             if (fetchRegistryUpdateLock.tryLock()) {
                 try {
                     updateDelta(delta);
+                    // 更新后的hash值, 比对下, 如果不同, 说明本地不同, 会重新拉取全量注册表
                     reconcileHashCode = getReconcileHashCode(applications);
                 } finally {
                     fetchRegistryUpdateLock.unlock();
