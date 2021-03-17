@@ -242,9 +242,15 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
     public void openForTraffic(ApplicationInfoManager applicationInfoManager, int count) {
         // Renewals happen every 30 seconds and for a minute it should be a factor of 2.
         // hard code 30s一次的定时心跳任务....
+        // 从其他服务拉取过来的实例数量 默认30s 一次, 1min *2 ....
+        // 初始化执行 上线 下线都会更新, 自动故障感知没找到更新的地方,
+        // 定时任务 com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl.scheduleRenewalThresholdUpdateTask 15min 一次
+        // 否则如果大量故障下线, 会很快进入自我保护机制
         this.expectedNumberOfRenewsPerMin = count * 2;
         // com.netflix.eureka.registry.AbstractInstanceRegistry.register 注册时后会更新
         // com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl.cancel 服务下线后更新
+        // 每分钟最小心跳数目 = 总心跳数目 * 0.85
+        //com.netflix.eureka.registry.AbstractInstanceRegistry.register
         this.numberOfRenewsPerMinThreshold =
                 (int) (this.expectedNumberOfRenewsPerMin * serverConfig.getRenewalPercentThreshold());
         logger.info("Got " + count + " instances from neighboring DS node");
@@ -261,6 +267,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
         }
         logger.info("Changing status to UP");
         applicationInfoManager.setInstanceStatus(InstanceStatus.UP);
+        // 自动故障感知
         super.postInit();
     }
 
@@ -500,6 +507,8 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
         // 上次心跳大于期望的次数, 才会去清除, 返回true
         // 注册, 下线时候会更行
         // 未找到故障, 如果大量故障, 期望心跳没有变少, 实际心跳变少  很快会导致进入自我保护机制, 不会进行摘除
+        // expectedNumberOfRenewsPerMin 初始化 com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl.openForTraffic
+        //  this.expectedNumberOfRenewsPerMin = count * 2;
         return numberOfRenewsPerMinThreshold > 0 && getNumOfRenewsInLastMin() > numberOfRenewsPerMinThreshold;
     }
 

@@ -243,6 +243,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                         // Since the client wants to cancel it, reduce the threshold
                         // (1
                         // for 30 seconds, 2 for a minute)
+                        // 新增一个服务实例, 每秒钟 + 2
                         this.expectedNumberOfRenewsPerMin = this.expectedNumberOfRenewsPerMin + 2;
                         this.numberOfRenewsPerMinThreshold =
                                 (int) (this.expectedNumberOfRenewsPerMin * serverConfig.getRenewalPercentThreshold());
@@ -639,7 +640,10 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                     // 获取每个服务的租约
                     Lease<InstanceInfo> lease = leaseEntry.getValue();
                     // 过期了, 添加 eureka bug 实际上超过2个设置的租约时间 才会过期
+                    // 还要失效多级缓存, 30s才能同步, 服务还要30s 才会重新抓取增量注册表
+                    // 下面摘除还有最大比例, 随机摘除
                     if (lease.isExpired(additionalLeaseMs) && lease.getHolder() != null) {
+                        // 放入一个List
                         expiredLeases.add(lease);
                     }
                 }
@@ -649,7 +653,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
         // To compensate for GC pauses or drifting local time, we need to use current registry size as a base for
         // triggering self-preservation. Without that we would wipe out full registry.
         int registrySize = (int) getLocalRegistrySize();
-        // 默认0.85 不能一次性摘除超过85%的服务实例
+        // 默认0.85 不能一次性摘除超过1 - 85%总数的服务实例
         int registrySizeThreshold = (int) (registrySize * serverConfig.getRenewalPercentThreshold());
         int evictionLimit = registrySize - registrySizeThreshold;
         // 取最小的
@@ -1267,6 +1271,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
         if (evictionTaskRef.get() != null) {
             evictionTaskRef.get().cancel();
         }
+        // 每60s 自动故障感知
         evictionTaskRef.set(new EvictionTask());
         // 默认每隔60s运行一次, 所以这里不管怎么设置(除了自我保护机制), 最小时间就是60/2 =30s (内置bug)
         evictionTimer.schedule(evictionTaskRef.get(),
@@ -1312,7 +1317,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
          */
         long getCompensationTimeMs() {
             long currNanos = getCurrentTimeNano();
-            // 上一次执行的时间
+            // 上一次执行的时间, 更新执行时间为当前时间 并且获取上次执行时间
             long lastNanos = lastExecutionNanosRef.getAndSet(currNanos);
             if (lastNanos == 0l) {
                 return 0l;
