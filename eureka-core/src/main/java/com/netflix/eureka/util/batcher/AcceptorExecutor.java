@@ -192,7 +192,7 @@ class AcceptorExecutor<ID, T> {
                     if (scheduleTime < now) {
                         scheduleTime = now + trafficShaper.transmissionDelay();
                     }
-                    // 放入batch 中
+                    // 放入batch中
                     if (scheduleTime <= now) {
                         assignBatchWork();
                         assignSingleItemWork();
@@ -292,12 +292,14 @@ class AcceptorExecutor<ID, T> {
         }
 
         void assignBatchWork() {
+            // 大于500ms才会进来
             if (hasEnoughTasksForNextBatch()) {
                 if (batchWorkRequests.tryAcquire(1)) {
                     long now = System.currentTimeMillis();
-                    // 取最小的
+                    // 取最小的, batch最大250
                     int len = Math.min(maxBatchingSize, processingOrder.size());
                     List<TaskHolder<ID, T>> holders = new ArrayList<>(len);
+                    // 从processingOrder中取出 放入holders中
                     while (holders.size() < len && !processingOrder.isEmpty()) {
                         ID id = processingOrder.poll();
                         TaskHolder<ID, T> holder = pendingTasks.remove(id);

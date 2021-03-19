@@ -85,7 +85,8 @@ public class PeerEurekaNodes {
                 }
         );
         try {
-            //解析配置文件中其他eureka server的url地址
+            //解析配置文件中其他eureka server的url地址resolvePeerUrls()
+            // updatePeerEurekaNodes 更新eureka 集群信息
             updatePeerEurekaNodes(resolvePeerUrls());
             Runnable peersUpdateTask = new Runnable() {
                 @Override
@@ -159,8 +160,10 @@ public class PeerEurekaNodes {
             return;
         }
 
+        // 计算出需要关闭的
         Set<String> toShutdown = new HashSet<>(peerEurekaNodeUrls);
         toShutdown.removeAll(newPeerUrls);
+        // 计算出新增的
         Set<String> toAdd = new HashSet<>(newPeerUrls);
         toAdd.removeAll(peerEurekaNodeUrls);
 

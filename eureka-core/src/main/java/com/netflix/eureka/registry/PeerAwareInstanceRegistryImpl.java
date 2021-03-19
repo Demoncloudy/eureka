@@ -208,7 +208,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
         // Copy entire entry from neighboring DS node
         int count = 0;
 
-        // 重试次数
+        // 重试次数 默认5次
         for (int i = 0; ((i < serverConfig.getRegistrySyncRetries()) && (count == 0)); i++) {
             if (i > 0) {
                 try {
@@ -220,6 +220,8 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
                     break;
                 }
             }
+            // eureka server自己本身本来就是个eureka client,在初始化的时候,就会去找任意的一个eureka server拉取注册表到自己本地来
+            // 把这个注册表放到自己身上来，作为自己这个eureka server的注册表
             Applications apps = eurekaClient.getApplications();
             for (Application app : apps.getRegisteredApplications()) {
                 for (InstanceInfo instance : app.getInstances()) {
@@ -652,7 +654,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
         Stopwatch tracer = action.getTimer().start();
         try {
             // client找服务端注册, 不是同步, isReplication为false, 不是同步.
-            // 当收到同步请求的时候, 才为true, 不会在发送同步请求
+            // 当收到同步请求的时候, 请求来自eureka server才为true, 不会在发送同步请求
             if (isReplication) {
                 numberOfReplicationsLastMin.increment();
             }
